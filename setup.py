@@ -96,33 +96,16 @@ def main():
         # In Windows, in python/X.Y/<arch>/; in Linux, in just python/X.Y/.
         # Naming conventions vary so widely between versions and OSes
         # had to give up on checking them.
-        [
-            r"python/cv2/python-%s/cv2.*"
-            % (sys.version_info[0])
-        ]
-        +
-        [
-            r"python/cv2/__init__.py"
-        ]
-        +
-        [
-            r"python/cv2/.*config.*.py"
-        ],
+        [r"python/cv2/python-%s/cv2.*" % (sys.version_info[0])]
+        + [r"python/cv2/__init__.py"]
+        + [r"python/cv2/.*config.*.py"],
         "cv2.data": [  # OPENCV_OTHER_INSTALL_PATH
             ("etc" if os.name == "nt" else "share/opencv4") + r"/haarcascades/.*\.xml"
         ],
-        "cv2.gapi": [
-            "python/cv2" + r"/gapi/.*\.py"
-        ],
-        "cv2.mat_wrapper": [
-            "python/cv2" + r"/mat_wrapper/.*\.py"
-        ],
-        "cv2.misc": [
-            "python/cv2" + r"/misc/.*\.py"
-        ],
-        "cv2.utils": [
-            "python/cv2" + r"/utils/.*\.py"
-        ],
+        "cv2.gapi": ["python/cv2" + r"/gapi/.*\.py"],
+        "cv2.mat_wrapper": ["python/cv2" + r"/mat_wrapper/.*\.py"],
+        "cv2.misc": ["python/cv2" + r"/misc/.*\.py"],
+        "cv2.utils": ["python/cv2" + r"/utils/.*\.py"],
     }
 
     # Files in sourcetree outside package dir that should be copied to package.
@@ -162,13 +145,14 @@ def main():
             "-DPYTHON3_LIMITED_API=ON",
             "-DBUILD_OPENEXR=ON",
             "-DBUILD_PNG=ON",
+            "-DOPENCV_ENABLE_NONFREE=ON",
         ]
         + (
             # If it is not defined 'linker flags: /machine:X86' on Windows x64
             ["-DCMAKE_GENERATOR_PLATFORM=x64"]
             if x64 and sys.platform == "win32"
             else []
-          )
+        )
         + (
             ["-DOPENCV_EXTRA_MODULES_PATH=" + os.path.abspath("opencv_contrib/modules")]
             if build_contrib
@@ -284,8 +268,8 @@ def main():
 
 class RearrangeCMakeOutput(object):
     """
-        Patch SKBuild logic to only take files related to the Python package
-        and construct a file hierarchy that SKBuild expects (see below)
+    Patch SKBuild logic to only take files related to the Python package
+    and construct a file hierarchy that SKBuild expects (see below)
     """
 
     _setuptools_wrap = None
@@ -370,25 +354,40 @@ class RearrangeCMakeOutput(object):
         print("Copying files from CMake output")
 
         # lines for a proper work using pylint and an autocomplete in IDE
-        with open(os.path.join(cmake_install_dir, "python", "cv2", "__init__.py"), 'r') as opencv_init:
+        with open(
+            os.path.join(cmake_install_dir, "python", "cv2", "__init__.py"), "r"
+        ) as opencv_init:
             opencv_init_lines = opencv_init.readlines()
-            extra_imports = ('\nfrom .cv2 import *\nfrom .cv2 import _registerMatType\nfrom . import mat_wrapper\nfrom . import gapi'
-                             '\nfrom . import misc\nfrom . import utils\nfrom . import data\nfrom . import version\n')
+            extra_imports = (
+                "\nfrom .cv2 import *\nfrom .cv2 import _registerMatType\nfrom . import mat_wrapper\nfrom . import gapi"
+                "\nfrom . import misc\nfrom . import utils\nfrom . import data\nfrom . import version\n"
+            )
             free_line_after_imports = 6
             opencv_init_lines.insert(free_line_after_imports, extra_imports)
             opencv_init_data = ""
             for line in opencv_init_lines:
-                opencv_init_replacement = line.replace('importlib.import_module("cv2")', 'importlib.import_module("cv2.cv2")')
+                opencv_init_replacement = line.replace(
+                    'importlib.import_module("cv2")',
+                    'importlib.import_module("cv2.cv2")',
+                )
                 opencv_init_data = opencv_init_data + opencv_init_replacement
 
-        with open(os.path.join(cmake_install_dir, "python", "cv2", "__init__.py"), 'w') as opencv_final_init:
+        with open(
+            os.path.join(cmake_install_dir, "python", "cv2", "__init__.py"), "w"
+        ) as opencv_final_init:
             opencv_final_init.write(opencv_init_data)
 
         # add lines from the old __init__.py file to the config file
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scripts', '__init__.py'), 'r') as custom_init:
+        with open(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "scripts", "__init__.py"
+            ),
+            "r",
+        ) as custom_init:
             custom_init_data = custom_init.read()
-        with open('%spython/cv2/config-%s.py'
-        % (cmake_install_dir, sys.version_info[0]), 'w') as opencv_init_config:
+        with open(
+            "%spython/cv2/config-%s.py" % (cmake_install_dir, sys.version_info[0]), "w"
+        ) as opencv_init_config:
             opencv_init_config.write(custom_init_data)
 
         for package_name, relpaths_re in cls.package_paths_re.items():
