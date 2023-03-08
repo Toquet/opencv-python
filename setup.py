@@ -146,6 +146,7 @@ def main():
             "-DBUILD_OPENEXR=ON",
             "-DBUILD_PNG=ON",
             "-DOPENCV_ENABLE_NONFREE=ON",
+            "-DWITH_OPENGL=ON",
         ]
         + (
             # If it is not defined 'linker flags: /machine:X86' on Windows x64
