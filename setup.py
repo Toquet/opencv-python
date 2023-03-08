@@ -179,6 +179,8 @@ def main():
             "-DPYTHON3_LIMITED_API=ON",
             "-DBUILD_OPENEXR=ON",
             "-DWITH_OPENGL=ON",
+            "-DHAVE_OPENGL=ON",
+            "-DOpenGL_GL_PREFERENCE=LEGACY",
             "-DOPENCV_ENABLE_NONFREE=ON",
         ]
         + (
