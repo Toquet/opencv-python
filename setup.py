@@ -180,7 +180,7 @@ def main():
             "-DBUILD_OPENEXR=ON",
             "-DWITH_OPENGL=ON",
             "-DHAVE_OPENGL=ON",
-            "-DOpenGL_GL_PREFERENCE=LEGACY",
+            "-DOpenGL_GL_PREFERENCE=GLVND",
             "-DOPENCV_ENABLE_NONFREE=ON",
         ]
         + (
