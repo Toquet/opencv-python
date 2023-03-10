@@ -181,6 +181,7 @@ def main():
             "-DWITH_OPENGL=ON",
             "-DHAVE_OPENGL=ON",
             "-DOPENCV_ENABLE_NONFREE=ON",
+            "-DWITH_QT=ON",
         ]
         + (
             # CMake flags for windows/arm64 build
